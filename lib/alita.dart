@@ -107,7 +107,7 @@ class _AlitaState extends State<Alita> {
         throw Exception('Failed to load data');
       }
     } catch (e) {
-      print('⛔ Error fetching dropdown data: $e');
+      logger.e('⛔ Error fetching dropdown data: $e');
     } finally {
       setState(() {
         isDropdownLoading = false;
