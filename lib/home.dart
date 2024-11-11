@@ -654,7 +654,7 @@ class _HomeState extends State<Home> {
         ),
         Expanded(
           child: Text(
-            value ?? 'tanpa data',
+            value ?? 'Tanpa data',
             style: const TextStyle(fontFamily: 'Poppins'),
           ),
         ),

@@ -21,9 +21,9 @@ class _AlitaState extends State<Alita> {
   List<String> channelOptions = [];
   List<String> brandOptions = [];
   List<String> kasurOptions = [];
-  List<String> divanOptions = ['Tanpa Divan'];
-  List<String> headboardOptions = ['Tanpa Headboard'];
-  List<String> sorongOptions = ['Tanpa Sorong'];
+  List<String> divanOptions = [];
+  List<String> headboardOptions = [];
+  List<String> sorongOptions = [];
   List<String> ukuranOptions = [];
 
   // Selected values
@@ -45,6 +45,9 @@ class _AlitaState extends State<Alita> {
   // Selected Card
   Map<String, dynamic>? selectedItem;
   Map<int, Map<String, double>> cardDiscounts = {};
+
+  // Filter Dropdown
+  List<dynamic> result = [];
 
   // Loading
   bool isLoading = false;
@@ -71,7 +74,7 @@ class _AlitaState extends State<Alita> {
         final data = json.decode(response.body);
 
         if (data['status'] == 'success' && data['result'] is List) {
-          List<dynamic> result = data['result'];
+          result = data['result'];
 
           // Memproses dropdown options
           setState(() {
@@ -80,41 +83,22 @@ class _AlitaState extends State<Alita> {
                 .whereType<String>()
                 .toSet()
                 .toList();
-            channelOptions = result
-                .map((item) => item['channel'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            brandOptions = result
-                .map((item) => item['brand'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            kasurOptions = result
-                .map((item) => item['kasur'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            divanOptions = result
-                .map((item) => item['divan'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            headboardOptions = result
-                .map((item) => item['headboard'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            sorongOptions = result
-                .map((item) => item['sorong'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            ukuranOptions = result
-                .map((item) => item['ukuran'] as String?)
-                .whereType<String>()
-                .toSet()
-                .toList();
+
+            selectedChannel = null;
+            selectedBrand = null;
+            selectedKasur = null;
+            selectedDivan = 'Tanpa Divan';
+            selectedHeadboard = 'Tanpa Headboard';
+            selectedSorong = 'Tanpa Sorong';
+            selectedUkuran = null;
+
+            channelOptions = [];
+            brandOptions = [];
+            kasurOptions = [];
+            divanOptions = [];
+            headboardOptions = [];
+            sorongOptions = [];
+            ukuranOptions = [];
           });
         } else {
           throw Exception('Unexpected data format');
@@ -123,12 +107,114 @@ class _AlitaState extends State<Alita> {
         throw Exception('Failed to load data');
       }
     } catch (e) {
-      logger.e('⛔ Error fetching dropdown data: $e');
+      print('⛔ Error fetching dropdown data: $e');
     } finally {
       setState(() {
         isDropdownLoading = false;
       });
     }
+  }
+
+  void updateChannelOptions(String area) {
+    channelOptions = result
+        .where((item) => item['area'] == area)
+        .map((item) => item['channel'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
+    selectedChannel = null;
+    selectedBrand = null;
+    selectedKasur = null;
+    selectedDivan = 'Tanpa Divan';
+    selectedHeadboard = 'Tanpa Headboard';
+    selectedSorong = 'Tanpa Sorong';
+    selectedUkuran = null;
+
+    brandOptions = [];
+    kasurOptions = [];
+    divanOptions = [];
+    headboardOptions = [];
+    sorongOptions = [];
+    ukuranOptions = [];
+  }
+
+  void updateBrandOptions(String channel) {
+    brandOptions = result
+        .where((item) => item['channel'] == channel)
+        .map((item) => item['brand'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
+    selectedBrand = null;
+    selectedKasur = null;
+    selectedDivan = 'Tanpa Divan';
+    selectedHeadboard = 'Tanpa Headboard';
+    selectedSorong = 'Tanpa Sorong';
+    selectedUkuran = null;
+
+    kasurOptions = [];
+    divanOptions = [];
+    headboardOptions = [];
+    sorongOptions = [];
+    ukuranOptions = [];
+  }
+
+  void updateKasurOptions(String brand) {
+    kasurOptions = result
+        .where((item) => item['brand'] == brand)
+        .map((item) => item['kasur'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
+    selectedKasur = null;
+    selectedDivan = 'Tanpa Divan';
+    selectedHeadboard = 'Tanpa Headboard';
+    selectedSorong = 'Tanpa Sorong';
+    selectedUkuran = null;
+
+    divanOptions = [];
+    headboardOptions = [];
+    sorongOptions = [];
+    ukuranOptions = [];
+  }
+
+  void updateDivanOptions(String kasur) {
+    divanOptions = result
+        .where((item) => item['kasur'] == kasur)
+        .map((item) => item['divan'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+  }
+
+  void updateHeadboardOptions(String kasur) {
+    headboardOptions = result
+        .where((item) => item['kasur'] == kasur)
+        .map((item) => item['headboard'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+  }
+
+  void updateSorongOptions(String kasur) {
+    sorongOptions = result
+        .where((item) => item['kasur'] == kasur)
+        .map((item) => item['sorong'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+  }
+
+  void updateUkuranOptions(String kasur) {
+    ukuranOptions = result
+        .where((item) => item['kasur'] == kasur)
+        .map((item) => item['ukuran'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
   }
 
   Future<void> fetchAndProcessData() async {
@@ -154,16 +240,16 @@ class _AlitaState extends State<Alita> {
 
               processedItem['pricelist'] = (item['pricelist'] != null)
                   ? formatCurrency(item['pricelist'])
-                  : 'tanpa data';
+                  : 'Tanpa data';
               processedItem['harga_net'] = (item['end_user_price'] != null)
                   ? formatCurrency(item['end_user_price'])
-                  : 'tanpa data';
+                  : 'Tanpa data';
 
               if (item['pricelist'] != null && item['end_user_price'] != null) {
                 double totalDiskon = item['pricelist'] - item['end_user_price'];
                 processedItem['total_diskon'] = formatCurrency(totalDiskon);
               } else {
-                processedItem['total_diskon'] = 'tanpa data';
+                processedItem['total_diskon'] = 'Tanpa data';
               }
 
               List<String> bonuses = [];
@@ -221,6 +307,10 @@ class _AlitaState extends State<Alita> {
       }).toList();
 
       isLoading = false;
+      if (searchResults.isEmpty) {
+        const snackBar = SnackBar(content: Text('Data Tidak di Temukan'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     });
   }
 
@@ -235,6 +325,14 @@ class _AlitaState extends State<Alita> {
       selectedSorong = 'Tanpa Sorong';
       selectedUkuran = null;
       searchResults.clear();
+
+      channelOptions = [];
+      brandOptions = [];
+      kasurOptions = [];
+      divanOptions = [];
+      headboardOptions = [];
+      sorongOptions = [];
+      ukuranOptions = [];
     });
   }
 
@@ -242,6 +340,9 @@ class _AlitaState extends State<Alita> {
     if (items.isEmpty) return 130;
     if (items.length == 2) {
       return 180;
+    }
+    if (items.length == 3) {
+      return 240;
     }
     return items.length > 4 ? 300 : items.length * 130;
   }
@@ -258,10 +359,10 @@ class _AlitaState extends State<Alita> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                  "Cicilan 12 Bulan: ${cicilan12 != null ? formatCurrency(cicilan12) : 'tanpa data'}"),
+                  "Cicilan 12 Bulan: ${cicilan12 != null ? formatCurrency(cicilan12) : 'Tanpa data'}"),
               const SizedBox(height: 8),
               Text(
-                  "Cicilan 15 Bulan: ${cicilan15 != null ? formatCurrency(cicilan15) : 'tanpa data'}"),
+                  "Cicilan 15 Bulan: ${cicilan15 != null ? formatCurrency(cicilan15) : 'Tanpa data'}"),
             ],
           ),
           actions: [
@@ -464,7 +565,7 @@ class _AlitaState extends State<Alita> {
                   },
                 ),
                 TextButton(
-                  child: const Text("Tutup"),
+                  child: const Text("Simpan"),
                   onPressed: () {
                     // Simpan nilai diskon terbaru di item
                     cardDiscounts[itemId] = {
@@ -540,7 +641,7 @@ class _AlitaState extends State<Alita> {
           ),
           actions: [
             TextButton(
-              child: const Text("Save"),
+              child: const Text("Simpan"),
               onPressed: () {
                 // Ambil nilai harga net baru dari input pengguna
                 double newNetPrice = double.tryParse(
@@ -587,7 +688,7 @@ class _AlitaState extends State<Alita> {
         ),
         Expanded(
           child: Text(
-            value ?? 'tanpa data',
+            value ?? 'Tanpa data',
             style: const TextStyle(fontFamily: 'Poppins'),
           ),
         ),
@@ -652,6 +753,10 @@ class _AlitaState extends State<Alita> {
                 onChanged: (value) {
                   setState(() {
                     selectedArea = value;
+                    selectedChannel = null;
+                    selectedBrand = null;
+                    selectedKasur = null;
+                    updateChannelOptions(value!);
                   });
                 },
                 selectedItem: selectedArea,
@@ -678,6 +783,9 @@ class _AlitaState extends State<Alita> {
                 onChanged: (value) {
                   setState(() {
                     selectedChannel = value;
+                    selectedBrand = null;
+                    selectedKasur = null;
+                    updateBrandOptions(value!);
                   });
                 },
                 selectedItem: selectedChannel,
@@ -704,6 +812,8 @@ class _AlitaState extends State<Alita> {
                 onChanged: (value) {
                   setState(() {
                     selectedBrand = value;
+                    selectedKasur = null;
+                    updateKasurOptions(value!);
                   });
                 },
                 selectedItem: selectedBrand,
@@ -730,6 +840,10 @@ class _AlitaState extends State<Alita> {
                 onChanged: (value) {
                   setState(() {
                     selectedKasur = value;
+                    updateDivanOptions(value!);
+                    updateHeadboardOptions(value);
+                    updateSorongOptions(value);
+                    updateUkuranOptions(value);
                   });
                 },
                 selectedItem: selectedKasur,
