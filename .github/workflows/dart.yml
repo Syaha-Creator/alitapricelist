@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
       - name: Upload a Build Artifact
-       - name: Setup Java JDK
+      - name: Setup Java JDK
         with:
           sdk: stable
       - run: dart pub get
