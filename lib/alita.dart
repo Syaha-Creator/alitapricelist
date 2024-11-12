@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:logger/web.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:pattern_formatter/numeric_formatter.dart';
 
 class Alita extends StatefulWidget {
   const Alita({super.key});
@@ -137,6 +138,10 @@ class _AlitaState extends State<Alita> {
     headboardOptions = [];
     sorongOptions = [];
     ukuranOptions = [];
+
+    if (channelOptions.isNotEmpty) {
+      updateKasurOptions(selectedBrand ?? '', channelOptions.first);
+    }
   }
 
   void updateBrandOptions(String channel) {
@@ -159,9 +164,13 @@ class _AlitaState extends State<Alita> {
     headboardOptions = [];
     sorongOptions = [];
     ukuranOptions = [];
+
+    if (brandOptions.isNotEmpty) {
+      updateKasurOptions(brandOptions.first, channel);
+    }
   }
 
-  void updateKasurOptions(String brand) {
+  void updateKasurOptions(String brand, String channel) {
     kasurOptions = result
         .where((item) => item['brand'] == brand)
         .map((item) => item['kasur'] as String?)
@@ -297,12 +306,10 @@ class _AlitaState extends State<Alita> {
             (selectedChannel == null || item['channel'] == selectedChannel) &&
             (selectedBrand == null || item['brand'] == selectedBrand) &&
             (selectedKasur == null || item['kasur'] == selectedKasur) &&
-            (selectedDivan == 'Tanpa Divan' ||
-                item['divan'] == selectedDivan) &&
-            (selectedHeadboard == 'Tanpa Headboard' ||
+            (selectedDivan == null || item['divan'] == selectedDivan) &&
+            (selectedHeadboard == null ||
                 item['headboard'] == selectedHeadboard) &&
-            (selectedSorong == 'Tanpa Sorong' ||
-                item['sorong'] == selectedSorong) &&
+            (selectedSorong == null || item['sorong'] == selectedSorong) &&
             (selectedUkuran == null || item['ukuran'] == selectedUkuran);
       }).toList();
 
@@ -616,7 +623,7 @@ class _AlitaState extends State<Alita> {
 
     // Controller untuk mengisi harga net baru
     TextEditingController netPriceController =
-        TextEditingController(text: originalNetPrice.toInt().toString());
+        TextEditingController(text: formatCurrency2(originalNetPrice));
 
     showDialog(
       context: context,
@@ -629,10 +636,11 @@ class _AlitaState extends State<Alita> {
             children: [
               const Text('Masukkan Harga Net Baru'),
               const SizedBox(height: 8),
-              TextField(
+              TextFormField(
+                inputFormatters: [ThousandsFormatter()],
                 controller: netPriceController,
-                keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
+                  prefixText: 'Rp. ',
                   labelText: 'Harga Net Baru',
                   border: OutlineInputBorder(),
                 ),
@@ -643,15 +651,12 @@ class _AlitaState extends State<Alita> {
             TextButton(
               child: const Text("Simpan"),
               onPressed: () {
-                // Ambil nilai harga net baru dari input pengguna
                 double newNetPrice = double.tryParse(
                         netPriceController.text.replaceAll(',', '')) ??
                     originalNetPrice;
 
-                // Hitung total diskon sebagai selisih antara pricelist dan harga net baru
                 double newTotalDiscount = priceList - newNetPrice;
 
-                // Update nilai harga net dan total diskon di item yang diklik
                 item['harga_net'] = formatCurrency(newNetPrice);
                 item['total_diskon'] = formatCurrency(newTotalDiscount);
 
@@ -668,6 +673,12 @@ class _AlitaState extends State<Alita> {
   String formatCurrency(double amount) {
     final formatCurrency =
         NumberFormat.currency(locale: 'id', symbol: 'Rp. ', decimalDigits: 0);
+    return formatCurrency.format(amount);
+  }
+
+  String formatCurrency2(double amount) {
+    final formatCurrency =
+        NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0);
     return formatCurrency.format(amount);
   }
 
@@ -813,7 +824,9 @@ class _AlitaState extends State<Alita> {
                   setState(() {
                     selectedBrand = value;
                     selectedKasur = null;
-                    updateKasurOptions(value!);
+                    if (selectedChannel != null) {
+                      updateKasurOptions(selectedBrand!, selectedChannel!);
+                    }
                   });
                 },
                 selectedItem: selectedBrand,
