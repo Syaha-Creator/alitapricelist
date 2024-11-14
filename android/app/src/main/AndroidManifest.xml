@@ -3,7 +3,7 @@
     <application
         android:label="Alitapricelist"
         android:name="${applicationName}"
-        android:icon="@mipmap/logor">
+        android:icon="@mipmap/logo">
         <activity
             android:name=".MainActivity"
             android:exported="true"
