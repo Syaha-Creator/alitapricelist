@@ -1,10 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:alitapricelist/login.dart';
+import 'package:alitapricelist/url.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/web.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:pattern_formatter/numeric_formatter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Alita extends StatefulWidget {
   const Alita({super.key});
@@ -54,9 +60,64 @@ class _AlitaState extends State<Alita> {
   bool isLoading = false;
   bool isDropdownLoading = false;
 
+  // Login
+  String? nama, token, image;
+  getPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    nama = prefs.getString('name')!;
+    image = prefs.getString('image_url')!;
+
+    setState(() {
+      nama = prefs.getString('name');
+      image = prefs.getString('image_url');
+    });
+  }
+
+  Future<bool> logout() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    token = preferences.getString("access_token");
+
+    final response = await http.post(
+      Uri.parse('${URLV2}oauth/revoke?token=${token!}$Client_Andro'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    if (response.statusCode == 200) {
+      var result = jsonDecode(response.body);
+      logger.i(result);
+      Fluttertoast.showToast(
+          msg: "Logout Success",
+          backgroundColor: Colors.cyan.shade300,
+          textColor: Colors.white,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP);
+
+      setState(() {
+        preferences.setInt("value", 0);
+        preferences.remove("email");
+        preferences.remove("name");
+      });
+
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => const Login()));
+
+      return true;
+    } else {
+      Fluttertoast.showToast(
+          msg: "Logout Failed  Status = ${response.statusCode}",
+          backgroundColor: Colors.cyan.shade300,
+          textColor: Colors.white,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP);
+    }
+    throw Exception(response.statusCode);
+  }
+
   @override
   void initState() {
     super.initState();
+    getPref();
     fetchAndProcessDropdownData();
   }
 
@@ -714,11 +775,14 @@ class _AlitaState extends State<Alita> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.price_check, color: Colors.white),
-                SizedBox(width: 10),
-                Text(
+                Image.asset(
+                  'assets/logo.png',
+                  height: 30,
+                ),
+                const SizedBox(width: 10),
+                const Text(
                   "Pricelist",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -730,14 +794,27 @@ class _AlitaState extends State<Alita> {
                 ),
               ],
             ),
-            Image.asset(
-              'assets/logo.png',
-              height: 30,
-            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: InkWell(
+                onTap: () {
+                  logout();
+                },
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Image.asset(
+                    'assets/power.png',
+                    width: 30,
+                  ),
+                ),
+              ),
+            )
           ],
         ),
         backgroundColor: Colors.blueAccent,
         elevation: 4,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(15),
