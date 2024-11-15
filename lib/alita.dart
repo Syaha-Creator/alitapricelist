@@ -721,7 +721,7 @@ class _AlitaState extends State<Alita> {
                 item['harga_net'] = formatCurrency(newNetPrice);
                 item['total_diskon'] = formatCurrency(newTotalDiscount);
 
-                onUpdate(); // Panggil callback untuk memperbarui tampilan card
+                onUpdate();
                 Navigator.of(context).pop();
               },
             ),
