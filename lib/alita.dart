@@ -376,8 +376,15 @@ class _AlitaState extends State<Alita> {
 
       isLoading = false;
       if (searchResults.isEmpty) {
-        const snackBar = SnackBar(content: Text('Data Tidak di Temukan'));
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        Fluttertoast.showToast(
+          msg: "Data Tidak di Temukan",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.redAccent,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
     });
   }
@@ -599,14 +606,12 @@ class _AlitaState extends State<Alita> {
                   child: const Text("Reset"),
                   onPressed: () {
                     setState(() {
-                      // Reset semua diskon ke nilai kosong
                       disc1Controller.clear();
                       disc2Controller.clear();
                       disc3Controller.clear();
                       disc4Controller.clear();
                       disc5Controller.clear();
 
-                      // Reset variabel diskon dan harga net ke nilai awal
                       disc1 = 0;
                       disc2 = 0;
                       disc3 = 0;
@@ -621,13 +626,11 @@ class _AlitaState extends State<Alita> {
                   child: const Text("Hitung"),
                   onPressed: () {
                     setState(() {
-                      // Hitung harga setelah diskon diterapkan
                       calculatedPrice = calculateDiscountedPrice(
                         originalPrice,
                         [disc1, disc2, disc3, disc4, disc5],
                       );
 
-                      // Total diskon dihitung sebagai selisih antara pricelist dan harga setelah diskon
                       totalDiscount = priceList - calculatedPrice;
                     });
                   },
@@ -635,7 +638,6 @@ class _AlitaState extends State<Alita> {
                 TextButton(
                   child: const Text("Simpan"),
                   onPressed: () {
-                    // Simpan nilai diskon terbaru di item
                     cardDiscounts[itemId] = {
                       'disc1': disc1,
                       'disc2': disc2,
@@ -675,14 +677,12 @@ class _AlitaState extends State<Alita> {
                 '0') ??
         0;
 
-    // Ambil nilai harga net saat ini
     double originalNetPrice = item['harga_net'] != null
         ? double.tryParse(
                 item['harga_net'].replaceAll('Rp. ', '').replaceAll('.', '')) ??
             item['end_user_price']
         : item['end_user_price'] ?? 0;
 
-    // Controller untuk mengisi harga net baru
     TextEditingController netPriceController =
         TextEditingController(text: formatCurrency2(originalNetPrice));
 
