@@ -731,6 +731,20 @@ class _AlitaState extends State<Alita> {
     );
   }
 
+  String _getAppliedDiscounts(int itemId) {
+    if (cardDiscounts.containsKey(itemId)) {
+      final discounts = cardDiscounts[itemId]!;
+      return [
+        discounts['disc1'] ?? 0,
+        discounts['disc2'] ?? 0,
+        discounts['disc3'] ?? 0,
+        discounts['disc4'] ?? 0,
+        discounts['disc5'] ?? 0
+      ].where((discount) => discount > 0).join(' + ');
+    }
+    return '0'; // Default display if no discounts are applied
+  }
+
   String formatCurrency(double amount) {
     final formatCurrency =
         NumberFormat.currency(locale: 'id', symbol: 'Rp. ', decimalDigits: 0);
@@ -794,22 +808,15 @@ class _AlitaState extends State<Alita> {
                 ),
               ],
             ),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: InkWell(
-                onTap: () {
-                  logout();
-                },
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Image.asset(
-                    'assets/power.png',
-                    width: 30,
-                  ),
-                ),
+            InkWell(
+              onTap: () {
+                logout();
+              },
+              child: Image.asset(
+                'assets/power.png',
+                width: 30,
               ),
-            )
+            ),
           ],
         ),
         backgroundColor: Colors.blueAccent,
@@ -1126,6 +1133,10 @@ class _AlitaState extends State<Alita> {
                             ),
                             const SizedBox(height: 10),
                             _buildRow('Total Diskon', item['total_diskon']),
+                            _buildRow(
+                              'Diskon yang Dipakai',
+                              _getAppliedDiscounts(item['id']),
+                            ),
                             _buildRow('Harga Net', item['harga_net']),
                             const SizedBox(height: 15),
                             Row(
