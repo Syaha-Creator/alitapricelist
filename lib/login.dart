@@ -97,7 +97,7 @@ class _LoginState extends State<Login> {
         );
         Fluttertoast.showToast(
             msg: "Selamat Datang",
-            backgroundColor: Colors.blueGrey.shade300,
+            backgroundColor: Colors.lightBlueAccent.shade400,
             textColor: Colors.white,
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.TOP);

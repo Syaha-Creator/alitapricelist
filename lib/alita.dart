@@ -88,7 +88,7 @@ class _AlitaState extends State<Alita> {
       logger.i(result);
       Fluttertoast.showToast(
           msg: "Logout Success",
-          backgroundColor: Colors.cyan.shade300,
+          backgroundColor: Colors.redAccent.shade200,
           textColor: Colors.white,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.TOP);
@@ -106,7 +106,7 @@ class _AlitaState extends State<Alita> {
     } else {
       Fluttertoast.showToast(
           msg: "Logout Failed  Status = ${response.statusCode}",
-          backgroundColor: Colors.cyan.shade300,
+          backgroundColor: Colors.redAccent.shade100,
           textColor: Colors.white,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.TOP);
