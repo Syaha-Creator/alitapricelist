@@ -199,10 +199,6 @@ class _AlitaState extends State<Alita> {
     headboardOptions = [];
     sorongOptions = [];
     ukuranOptions = [];
-
-    if (channelOptions.isNotEmpty) {
-      updateKasurOptions(selectedBrand ?? '', channelOptions.first);
-    }
   }
 
   void updateBrandOptions(String channel) {
@@ -225,15 +221,11 @@ class _AlitaState extends State<Alita> {
     headboardOptions = [];
     sorongOptions = [];
     ukuranOptions = [];
-
-    if (brandOptions.isNotEmpty) {
-      updateKasurOptions(brandOptions.first, channel);
-    }
   }
 
   void updateKasurOptions(String brand, String channel) {
     kasurOptions = result
-        .where((item) => item['brand'] == brand)
+        .where((item) => item['brand'] == brand && item['channel'] == channel)
         .map((item) => item['kasur'] as String?)
         .whereType<String>()
         .toSet()
@@ -251,40 +243,72 @@ class _AlitaState extends State<Alita> {
     ukuranOptions = [];
   }
 
-  void updateDivanOptions(String kasur) {
+  void updateDivanOptions(String kasur, String brand, String channel) {
     divanOptions = result
-        .where((item) => item['kasur'] == kasur)
+        .where((item) =>
+            item['kasur'] == kasur &&
+            item['brand'] == brand &&
+            item['channel'] == channel)
         .map((item) => item['divan'] as String?)
         .whereType<String>()
         .toSet()
         .toList();
+
+    setState(() {
+      selectedDivan =
+          divanOptions.isNotEmpty ? divanOptions.first : 'Tanpa Divan';
+    });
   }
 
-  void updateHeadboardOptions(String kasur) {
+  void updateHeadboardOptions(String kasur, String brand, String channel) {
     headboardOptions = result
-        .where((item) => item['kasur'] == kasur)
+        .where((item) =>
+            item['kasur'] == kasur &&
+            item['brand'] == brand &&
+            item['channel'] == channel)
         .map((item) => item['headboard'] as String?)
         .whereType<String>()
         .toSet()
         .toList();
+
+    setState(() {
+      selectedHeadboard = headboardOptions.isNotEmpty
+          ? headboardOptions.first
+          : 'Tanpa Headboard';
+    });
   }
 
-  void updateSorongOptions(String kasur) {
+  void updateSorongOptions(String kasur, String brand, String channel) {
     sorongOptions = result
-        .where((item) => item['kasur'] == kasur)
+        .where((item) =>
+            item['kasur'] == kasur &&
+            item['brand'] == brand &&
+            item['channel'] == channel)
         .map((item) => item['sorong'] as String?)
         .whereType<String>()
         .toSet()
         .toList();
+
+    setState(() {
+      selectedSorong =
+          sorongOptions.isNotEmpty ? sorongOptions.first : 'Tanpa Sorong';
+    });
   }
 
-  void updateUkuranOptions(String kasur) {
+  void updateUkuranOptions(String kasur, String brand, String channel) {
     ukuranOptions = result
-        .where((item) => item['kasur'] == kasur)
+        .where((item) =>
+            item['kasur'] == kasur &&
+            item['brand'] == brand &&
+            item['channel'] == channel)
         .map((item) => item['ukuran'] as String?)
         .whereType<String>()
         .toSet()
         .toList();
+
+    setState(() {
+      selectedUkuran = null;
+    });
   }
 
   Future<void> fetchAndProcessData() async {
@@ -937,10 +961,16 @@ class _AlitaState extends State<Alita> {
                 onChanged: (value) {
                   setState(() {
                     selectedKasur = value;
-                    updateDivanOptions(value!);
-                    updateHeadboardOptions(value);
-                    updateSorongOptions(value);
-                    updateUkuranOptions(value);
+                    if (value != null) {
+                      updateDivanOptions(
+                          value, selectedBrand ?? '', selectedChannel ?? '');
+                      updateHeadboardOptions(
+                          value, selectedBrand ?? '', selectedChannel ?? '');
+                      updateSorongOptions(
+                          value, selectedBrand ?? '', selectedChannel ?? '');
+                      updateUkuranOptions(
+                          value, selectedBrand ?? '', selectedChannel ?? '');
+                    }
                   });
                 },
                 selectedItem: selectedKasur,
