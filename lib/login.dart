@@ -86,7 +86,6 @@ class _LoginState extends State<Login> {
           savePref(
               0, emailAPI, namaAPI, id, showimage, no, area, compny, token);
         });
-
         print(response.statusCode);
         print(namaAPI);
         print("result = $data");
