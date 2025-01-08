@@ -487,6 +487,12 @@ class _AlitaState extends State<Alita> {
     double disc4 = cardDiscounts[itemId]?['disc4'] ?? 0;
     double disc5 = cardDiscounts[itemId]?['disc5'] ?? 0;
 
+    double nominal1 = cardDiscounts[itemId]?['nominal1'] ?? 0;
+    double nominal2 = cardDiscounts[itemId]?['nominal2'] ?? 0;
+    double nominal3 = cardDiscounts[itemId]?['nominal3'] ?? 0;
+    double nominal4 = cardDiscounts[itemId]?['nominal4'] ?? 0;
+    double nominal5 = cardDiscounts[itemId]?['nominal5'] ?? 0;
+
     TextEditingController disc1Controller =
         TextEditingController(text: disc1 > 0 ? disc1.toString() : '');
     TextEditingController disc2Controller =
@@ -497,6 +503,17 @@ class _AlitaState extends State<Alita> {
         TextEditingController(text: disc4 > 0 ? disc4.toString() : '');
     TextEditingController disc5Controller =
         TextEditingController(text: disc5 > 0 ? disc5.toString() : '');
+
+    TextEditingController nominalDisc1Controller = TextEditingController(
+        text: nominal1 > 0 ? currencyFormat.format(nominal1) : '');
+    TextEditingController nominalDisc2Controller = TextEditingController(
+        text: nominal2 > 0 ? currencyFormat.format(nominal2) : '');
+    TextEditingController nominalDisc3Controller = TextEditingController(
+        text: nominal3 > 0 ? currencyFormat.format(nominal3) : '');
+    TextEditingController nominalDisc4Controller = TextEditingController(
+        text: nominal4 > 0 ? currencyFormat.format(nominal4) : '');
+    TextEditingController nominalDisc5Controller = TextEditingController(
+        text: nominal5 > 0 ? currencyFormat.format(nominal5) : '');
 
     double priceList = double.tryParse(
             item['pricelist']?.replaceAll('Rp. ', '').replaceAll('.', '') ??
@@ -525,96 +542,210 @@ class _AlitaState extends State<Alita> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Input diskon untuk pengguna
-                    TextField(
-                      controller: disc1Controller,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Diskon 1 (%)',
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          disc1 = double.tryParse(value) ?? 0;
-                          if (disc1 > 10) {
-                            disc1 = 10;
-                            disc1Controller.text = '10';
-                            disc1Controller.selection =
-                                TextSelection.fromPosition(TextPosition(
-                                    offset: disc1Controller.text.length));
-                          }
-                        });
-                      },
+                    Row(
+                      children: [
+                        // Input Diskon dalam Persen
+                        Expanded(
+                          child: TextField(
+                            controller: disc1Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Diskon 1 (%)'),
+                            onChanged: (value) {
+                              setState(() {
+                                disc1 = double.tryParse(value) ?? 0;
+                                nominalDisc1Controller.text =
+                                    ((calculatedPrice * disc1) / 100)
+                                        .toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Input Diskon dalam Nominal
+                        Expanded(
+                          child: TextField(
+                            inputFormatters: [ThousandsFormatter()],
+                            controller: nominalDisc1Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Nominal (Rp)'),
+                            onChanged: (value) {
+                              setState(() {
+                                double nominal = double.tryParse(
+                                        value.replaceAll(',', '')) ??
+                                    0;
+                                disc1 = (nominal / calculatedPrice) * 100;
+                                disc1Controller.text = disc1.toStringAsFixed(2);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    TextField(
-                      controller: disc2Controller,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Diskon 2 (%)'),
-                      onChanged: (value) {
-                        setState(() {
-                          disc2 = double.tryParse(value) ?? 0;
-                          if (disc2 > 5) {
-                            disc2 = 5;
-                            disc2Controller.text = '5';
-                            disc2Controller.selection =
-                                TextSelection.fromPosition(TextPosition(
-                                    offset: disc2Controller.text.length));
-                          }
-                        });
-                      },
+                    Row(
+                      children: [
+                        // Input Diskon dalam Persen
+                        Expanded(
+                          child: TextField(
+                            controller: disc2Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Diskon 2 (%)'),
+                            onChanged: (value) {
+                              setState(() {
+                                disc2 = double.tryParse(value) ?? 0;
+                                nominalDisc2Controller.text =
+                                    ((calculatedPrice * disc2) / 100)
+                                        .toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Input Diskon dalam Nominal
+                        Expanded(
+                          child: TextField(
+                            inputFormatters: [ThousandsFormatter()],
+                            controller: nominalDisc2Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Nominal (Rp)'),
+                            onChanged: (value) {
+                              setState(() {
+                                double nominal = double.tryParse(
+                                        value.replaceAll(',', '')) ??
+                                    0;
+                                disc2 = (nominal / calculatedPrice) * 100;
+                                disc2Controller.text = disc2.toStringAsFixed(2);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    TextField(
-                      controller: disc3Controller,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Diskon 3 (%)'),
-                      onChanged: (value) {
-                        setState(() {
-                          disc3 = double.tryParse(value) ?? 0;
-                          if (disc3 > 5) {
-                            disc3 = 5;
-                            disc3Controller.text = '5';
-                            disc3Controller.selection =
-                                TextSelection.fromPosition(TextPosition(
-                                    offset: disc3Controller.text.length));
-                          }
-                        });
-                      },
+                    Row(
+                      children: [
+                        // Input Diskon dalam Persen
+                        Expanded(
+                          child: TextField(
+                            controller: disc3Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Diskon 3 (%)'),
+                            onChanged: (value) {
+                              setState(() {
+                                disc3 = double.tryParse(value) ?? 0;
+                                nominalDisc3Controller.text =
+                                    ((calculatedPrice * disc3) / 100)
+                                        .toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Input Diskon dalam Nominal
+                        Expanded(
+                          child: TextField(
+                            inputFormatters: [ThousandsFormatter()],
+                            controller: nominalDisc3Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Nominal (Rp)'),
+                            onChanged: (value) {
+                              setState(() {
+                                double nominal = double.tryParse(
+                                        value.replaceAll(',', '')) ??
+                                    0;
+                                disc3 = (nominal / calculatedPrice) * 100;
+                                disc3Controller.text = disc3.toStringAsFixed(2);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    TextField(
-                      controller: disc4Controller,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Diskon 4 (%)'),
-                      onChanged: (value) {
-                        setState(() {
-                          disc4 = double.tryParse(value) ?? 0;
-                          if (disc4 > 5) {
-                            disc4 = 5;
-                            disc4Controller.text = '5';
-                            disc4Controller.selection =
-                                TextSelection.fromPosition(TextPosition(
-                                    offset: disc4Controller.text.length));
-                          }
-                        });
-                      },
+                    Row(
+                      children: [
+                        // Input Diskon dalam Persen
+                        Expanded(
+                          child: TextField(
+                            controller: disc4Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Diskon 4 (%)'),
+                            onChanged: (value) {
+                              setState(() {
+                                disc4 = double.tryParse(value) ?? 0;
+                                nominalDisc4Controller.text =
+                                    ((calculatedPrice * disc4) / 100)
+                                        .toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Input Diskon dalam Nominal
+                        Expanded(
+                          child: TextField(
+                            inputFormatters: [ThousandsFormatter()],
+                            controller: nominalDisc4Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Nominal (Rp)'),
+                            onChanged: (value) {
+                              setState(() {
+                                double nominal = double.tryParse(
+                                        value.replaceAll(',', '')) ??
+                                    0;
+                                disc4 = (nominal / calculatedPrice) * 100;
+                                disc4Controller.text = disc4.toStringAsFixed(2);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    TextField(
-                      controller: disc5Controller,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Diskon 5 (%)'),
-                      onChanged: (value) {
-                        setState(() {
-                          disc5 = double.tryParse(value) ?? 0;
-                          if (disc5 > 5) {
-                            disc5 = 5;
-                            disc5Controller.text = '5';
-                            disc5Controller.selection =
-                                TextSelection.fromPosition(TextPosition(
-                                    offset: disc5Controller.text.length));
-                          }
-                        });
-                      },
+                    Row(
+                      children: [
+                        // Input Diskon dalam Persen
+                        Expanded(
+                          child: TextField(
+                            controller: disc5Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Diskon 5 (%)'),
+                            onChanged: (value) {
+                              setState(() {
+                                disc5 = double.tryParse(value) ?? 0;
+                                nominalDisc5Controller.text =
+                                    ((calculatedPrice * disc5) / 100)
+                                        .toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Input Diskon dalam Nominal
+                        Expanded(
+                          child: TextField(
+                            inputFormatters: [ThousandsFormatter()],
+                            controller: nominalDisc5Controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: 'Nominal (Rp)'),
+                            onChanged: (value) {
+                              setState(() {
+                                double nominal = double.tryParse(
+                                        value.replaceAll(',', '')) ??
+                                    0;
+                                disc5 = (nominal / calculatedPrice) * 100;
+                                disc5Controller.text = disc5.toStringAsFixed(2);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
 
@@ -636,25 +767,23 @@ class _AlitaState extends State<Alita> {
                       disc4Controller.clear();
                       disc5Controller.clear();
 
+                      nominalDisc1Controller.clear();
+                      nominalDisc2Controller.clear();
+                      nominalDisc3Controller.clear();
+                      nominalDisc4Controller.clear();
+                      nominalDisc5Controller.clear();
+
                       disc1 = 0;
                       disc2 = 0;
                       disc3 = 0;
                       disc4 = 0;
                       disc5 = 0;
+                      nominal1 = 0;
+                      nominal2 = 0;
+                      nominal3 = 0;
+                      nominal4 = 0;
+                      nominal5 = 0;
                       calculatedPrice = originalPrice;
-                      totalDiscount = priceList - calculatedPrice;
-                    });
-                  },
-                ),
-                TextButton(
-                  child: const Text("Hitung"),
-                  onPressed: () {
-                    setState(() {
-                      calculatedPrice = calculateDiscountedPrice(
-                        originalPrice,
-                        [disc1, disc2, disc3, disc4, disc5],
-                      );
-
                       totalDiscount = priceList - calculatedPrice;
                     });
                   },
@@ -662,13 +791,82 @@ class _AlitaState extends State<Alita> {
                 TextButton(
                   child: const Text("Simpan"),
                   onPressed: () {
-                    cardDiscounts[itemId] = {
-                      'disc1': disc1,
-                      'disc2': disc2,
-                      'disc3': disc3,
-                      'disc4': disc4,
-                      'disc5': disc5,
-                    };
+                    Map<String, double> updatedDiscounts = {};
+
+                    // Periksa dan simpan diskon 1 jika diisi
+                    if (disc1 > 0) {
+                      updatedDiscounts['disc1'] =
+                          double.parse(disc1.toStringAsFixed(2));
+                    }
+                    if (nominalDisc1Controller.text.isNotEmpty) {
+                      double? nominal1 = double.tryParse(
+                          nominalDisc1Controller.text.replaceAll(',', ''));
+                      if (nominal1 != null) {
+                        updatedDiscounts['nominal1'] = nominal1;
+                      }
+                    }
+
+                    // Periksa dan simpan diskon 2 jika diisi
+                    if (disc2 > 0) {
+                      updatedDiscounts['disc2'] =
+                          double.parse(disc2.toStringAsFixed(2));
+                    }
+                    if (nominalDisc2Controller.text.isNotEmpty) {
+                      double? nominal2 = double.tryParse(
+                          nominalDisc2Controller.text.replaceAll(',', ''));
+                      if (nominal2 != null) {
+                        updatedDiscounts['nominal2'] = nominal2;
+                      }
+                    }
+
+                    // Periksa dan simpan diskon 3 jika diisi
+                    if (disc3 > 0) {
+                      updatedDiscounts['disc3'] =
+                          double.parse(disc3.toStringAsFixed(2));
+                    }
+                    if (nominalDisc3Controller.text.isNotEmpty) {
+                      double? nominal3 = double.tryParse(
+                          nominalDisc3Controller.text.replaceAll(',', ''));
+                      if (nominal3 != null) {
+                        updatedDiscounts['nominal3'] = nominal3;
+                      }
+                    }
+
+                    // Periksa dan simpan diskon 4 jika diisi
+                    if (disc4 > 0) {
+                      updatedDiscounts['disc4'] =
+                          double.parse(disc4.toStringAsFixed(2));
+                    }
+                    if (nominalDisc4Controller.text.isNotEmpty) {
+                      double? nominal4 = double.tryParse(
+                          nominalDisc4Controller.text.replaceAll(',', ''));
+                      if (nominal4 != null) {
+                        updatedDiscounts['nominal4'] = nominal4;
+                      }
+                    }
+
+                    // Periksa dan simpan diskon 5 jika diisi
+                    if (disc5 > 0) {
+                      updatedDiscounts['disc5'] =
+                          double.parse(disc5.toStringAsFixed(2));
+                    }
+                    if (nominalDisc5Controller.text.isNotEmpty) {
+                      double? nominal5 = double.tryParse(
+                          nominalDisc5Controller.text.replaceAll(',', ''));
+                      if (nominal5 != null) {
+                        updatedDiscounts['nominal5'] = nominal5;
+                      }
+                    }
+
+                    // Simpan nilai yang valid ke cardDiscounts
+                    cardDiscounts[itemId] = updatedDiscounts;
+
+                    calculatedPrice = calculateDiscountedPrice(
+                      originalPrice,
+                      [disc1, disc2, disc3, disc4, disc5],
+                    );
+
+                    totalDiscount = priceList - calculatedPrice;
 
                     // Update item dengan nilai terbaru untuk total diskon dan harga net
                     item['total_diskon'] = formatCurrency(totalDiscount);
