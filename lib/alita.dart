@@ -10,6 +10,7 @@ import 'package:logger/web.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:pattern_formatter/numeric_formatter.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Alita extends StatefulWidget {
@@ -446,32 +447,138 @@ class _AlitaState extends State<Alita> {
     return items.length > 4 ? 300 : items.length * 130;
   }
 
-  void showCicilanDialog(
-      BuildContext context, double? cicilan12, double? cicilan15) {
+  // void showCicilanDialog(
+  //     BuildContext context, double? cicilan12, double? cicilan15) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text("Cicilan"),
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(
+  //                 "Cicilan 12 Bulan: ${cicilan12 != null ? formatCurrency(cicilan12) : 'Tanpa data'}"),
+  //             const SizedBox(height: 8),
+  //             Text(
+  //                 "Cicilan 15 Bulan: ${cicilan15 != null ? formatCurrency(cicilan15) : 'Tanpa data'}"),
+  //           ],
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text("Tutup"),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  void showCicilanInputDialog(
+      BuildContext context, Map<String, dynamic> item, VoidCallback onUpdate) {
+    // Ambil jumlah bulan dan cicilan yang sudah ada
+    int initialBulan = item['cicilan']?['jumlah_bulan'] ?? 0;
+    double initialCicilan = item['cicilan']?['per_bulan'] ?? 0;
+
+    TextEditingController bulanController = TextEditingController(
+        text: initialBulan > 0 ? initialBulan.toString() : '');
+    double hargaNet = double.tryParse(
+            item['harga_net'].replaceAll('Rp. ', '').replaceAll('.', '')) ??
+        0;
+    double cicilanPerBulan = initialCicilan > 0 ? initialCicilan : hargaNet;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Cicilan"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  "Cicilan 12 Bulan: ${cicilan12 != null ? formatCurrency(cicilan12) : 'Tanpa data'}"),
-              const SizedBox(height: 8),
-              Text(
-                  "Cicilan 15 Bulan: ${cicilan15 != null ? formatCurrency(cicilan15) : 'Tanpa data'}"),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("Tutup"),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Hitung Cicilan'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Jumlah Bulan'),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: bulanController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                hintText: 'Masukkan bulan',
+                                border: OutlineInputBorder(),
+                              ),
+                              onChanged: (value) {
+                                final jumlahBulan = int.tryParse(value) ?? 0;
+                                setState(() {
+                                  cicilanPerBulan = jumlahBulan > 0
+                                      ? hargaNet / jumlahBulan
+                                      : hargaNet;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Cicilan per Bulan'),
+                            const SizedBox(height: 8),
+                            TextField(
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                hintText: formatCurrency(cicilanPerBulan),
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: const Text("Simpan"),
+                  onPressed: () {
+                    final jumlahBulan = int.tryParse(bulanController.text) ?? 0;
+
+                    // Simpan cicilan ke item
+                    if (jumlahBulan > 0) {
+                      item['cicilan'] = {
+                        'jumlah_bulan': jumlahBulan,
+                        'per_bulan': cicilanPerBulan,
+                      };
+                    } else {
+                      item['cicilan'] = null;
+                    }
+
+                    // Perbarui state aplikasi
+                    setState(() {
+                      searchResults[searchResults.indexOf(item)] = item;
+                    });
+
+                    // Callback untuk memperbarui UI
+                    onUpdate();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -761,6 +868,8 @@ class _AlitaState extends State<Alita> {
                   child: const Text("Reset"),
                   onPressed: () {
                     setState(() {
+                      cardDiscounts[itemId] = {};
+
                       disc1Controller.clear();
                       disc2Controller.clear();
                       disc3Controller.clear();
@@ -868,6 +977,18 @@ class _AlitaState extends State<Alita> {
 
                     totalDiscount = priceList - calculatedPrice;
 
+                    if (updatedDiscounts.isEmpty) {
+                      cardDiscounts.remove(itemId); // Hapus diskon jika kosong
+                    }
+
+                    if (item['cicilan'] != null) {
+                      int jumlahBulan = item['cicilan']['jumlah_bulan'];
+                      if (jumlahBulan > 0) {
+                        item['cicilan']['per_bulan'] =
+                            calculatedPrice / jumlahBulan;
+                      }
+                    }
+
                     // Update item dengan nilai terbaru untuk total diskon dan harga net
                     item['total_diskon'] = formatCurrency(totalDiscount);
                     item['harga_net'] = formatCurrency(calculatedPrice);
@@ -924,7 +1045,6 @@ class _AlitaState extends State<Alita> {
                 controller: netPriceController,
                 decoration: const InputDecoration(
                   prefixText: 'Rp. ',
-                  labelText: 'Harga Net Baru',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -954,7 +1074,8 @@ class _AlitaState extends State<Alita> {
   }
 
   String _getAppliedDiscounts(int itemId) {
-    if (cardDiscounts.containsKey(itemId)) {
+    if (cardDiscounts.containsKey(itemId) &&
+        cardDiscounts[itemId]!.isNotEmpty) {
       final discounts = cardDiscounts[itemId]!;
       return [
         discounts['disc1'] ?? 0,
@@ -964,7 +1085,7 @@ class _AlitaState extends State<Alita> {
         discounts['disc5'] ?? 0
       ].where((discount) => discount > 0).join(' + ');
     }
-    return '0'; // Default display if no discounts are applied
+    return '0'; // Tampilkan 0 jika tidak ada diskon
   }
 
   String formatCurrency(double amount) {
@@ -1002,6 +1123,11 @@ class _AlitaState extends State<Alita> {
         ),
       ],
     );
+  }
+
+  String _formatRow(String label, String? value, int maxWidth) {
+    value = value ?? 'Tanpa data';
+    return '${label.padRight(maxWidth)} : $value';
   }
 
   @override
@@ -1361,19 +1487,32 @@ class _AlitaState extends State<Alita> {
                             ),
                             const SizedBox(height: 10),
                             _buildRow('Total Diskon', item['total_diskon']),
-                            _buildRow(
-                              'Diskon yang Dipakai',
-                              _getAppliedDiscounts(item['id']),
-                            ),
+                            if (_getAppliedDiscounts(item['id']) != '0')
+                              _buildRow(
+                                'Diskon yang Dipakai',
+                                _getAppliedDiscounts(item['id']),
+                              ),
                             _buildRow('Harga Net', item['harga_net']),
+                            if (item['cicilan'] != null &&
+                                item['cicilan']['jumlah_bulan'] > 0)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildRow(
+                                    'Cicilan',
+                                    '${item['cicilan']['jumlah_bulan']} x ${formatCurrency(item['cicilan']['per_bulan'])}',
+                                  ),
+                                ],
+                              ),
                             const SizedBox(height: 15),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 ElevatedButton(
                                   onPressed: () {
-                                    showCicilanDialog(context,
-                                        item['cicilan_12'], item['cicilan_15']);
+                                    showCicilanInputDialog(context, item, () {
+                                      setState(() {});
+                                    });
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor:
@@ -1413,6 +1552,59 @@ class _AlitaState extends State<Alita> {
                                   },
                                   icon: const Icon(Icons.help_outline,
                                       color: Colors.orange),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    try {
+                                      // Generate shareable text content
+                                      final labels = [
+                                        'Kasur',
+                                        'Divan',
+                                        'Headboard',
+                                        'Sorong',
+                                        'Ukuran',
+                                        'Program',
+                                        'Price List',
+                                        'Total Diskon',
+                                        'Harga Net'
+                                      ];
+
+                                      // Hitung panjang maksimum label
+                                      final maxLabelWidth = labels
+                                          .map((label) => label.length)
+                                          .reduce((a, b) => a > b ? a : b);
+
+                                      // Format teks rapi
+                                      final shareContent = '''
+                                        Detail Kasur:
+                                        ${_formatRow('Kasur', item['kasur'], maxLabelWidth)}
+                                        ${_formatRow('Divan', item['divan'], maxLabelWidth)}
+                                        ${_formatRow('Headboard', item['headboard'], maxLabelWidth)}
+                                        ${_formatRow('Sorong', item['sorong'], maxLabelWidth)}
+                                        ${_formatRow('Ukuran', item['ukuran'], maxLabelWidth)}
+                                        ${_formatRow('Program', item['program'], maxLabelWidth)}
+                                        ${_formatRow('Price List', item['pricelist'], maxLabelWidth)}
+                                        ${_formatRow('Total Diskon', item['total_diskon'], maxLabelWidth)}
+                                        ${_formatRow('Harga Net', item['harga_net'], maxLabelWidth)}
+
+                                        Bonus:
+                                        ${item['bonuses'] ?? "Tanpa Bonus"}
+                                              ''';
+                                      // Share the content
+                                      Share.share(shareContent);
+                                    } catch (e) {
+                                      logger.e("Error while sharing text: $e");
+                                      Fluttertoast.showToast(
+                                        msg: "Failed to share text",
+                                        backgroundColor: Colors.redAccent,
+                                        textColor: Colors.white,
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.TOP,
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(Icons.share,
+                                      color: Colors.green),
                                 ),
                               ],
                             ),
